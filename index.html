@@ -3,140 +3,118 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Creative Gallery Walkthrough</title>
+  <title>Endless White Gallery</title>
   <style>
-    html,body{margin:0;height:100%;overflow:hidden;background:#070812;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-    canvas{display:block;width:100vw;height:100vh}
+    html, body { margin:0; height:100%; overflow:hidden; background:#f7f7f9; font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; }
+    canvas { display:block; width:100vw; height:100vh; }
 
-    #hud{position:fixed;inset:0;pointer-events:none}
-    .pill{
-      position:absolute;left:16px;top:16px;
-      padding:10px 12px;border-radius:12px;color:#fff;font-weight:700;
-      background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);
-      backdrop-filter:blur(8px);box-shadow:0 10px 30px rgba(0,0,0,.35);
-    }
-    .hint{
-      position:absolute;left:16px;top:64px;
-      padding:8px 12px;border-radius:12px;color:rgba(255,255,255,.85);font-size:13px;
-      background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
-      backdrop-filter:blur(8px);
-      max-width: 520px;
-    }
-    #reticle{
-      position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-      width:22px;height:22px;display:flex;align-items:center;justify-content:center;
-      color:rgba(255,255,255,.65);font-weight:800;font-size:18px;
-      text-shadow:0 0 14px rgba(43,188,255,.35);
-      opacity:.9;
+    /* Minimal HUD */
+    #hud{
+      position: fixed; inset: 0;
       pointer-events:none;
     }
-
-    /* Painting popover */
-    #card{
-      position:absolute;left:50%;bottom:20px;transform:translateX(-50%);
-      min-width:260px;max-width: min(560px, 92vw);
-      padding:12px 14px;border-radius:14px;
-      background:rgba(10,10,16,.65);
-      border:1px solid rgba(255,255,255,.12);
-      backdrop-filter:blur(10px);
-      box-shadow:0 18px 45px rgba(0,0,0,.5);
-      color:#fff;
-      display:none;
+    .badge{
+      position:absolute; left:16px; top:16px;
+      padding:10px 12px; border-radius:12px;
+      background: rgba(255,255,255,.75);
+      border: 1px solid rgba(0,0,0,.08);
+      box-shadow: 0 10px 30px rgba(0,0,0,.08);
+      color:#111; font-weight:700;
+      letter-spacing:.2px;
+      pointer-events:none;
+      backdrop-filter: blur(10px);
     }
-    #card .t{font-weight:800;letter-spacing:.3px}
-    #card .s{margin-top:6px;color:rgba(255,255,255,.8);font-size:13px;line-height:1.35}
-
-    /* Optional on-screen controls for “non gamer” visitors / mobile */
-    #pad{
-      position:absolute;right:16px;bottom:16px;
-      display:grid;grid-template-columns:52px 52px 52px;grid-template-rows:52px 52px;
-      gap:10px;pointer-events:auto;
-      opacity:.92;
+    .hint{
+      position:absolute; left:16px; top:64px;
+      padding:8px 12px; border-radius:12px;
+      background: rgba(255,255,255,.65);
+      border: 1px solid rgba(0,0,0,.08);
+      box-shadow: 0 10px 30px rgba(0,0,0,.06);
+      color:#333; font-size:13px; line-height:1.35;
+      max-width: 520px;
+      pointer-events:none;
+      backdrop-filter: blur(10px);
     }
-    .btn{
-      border-radius:14px;border:1px solid rgba(255,255,255,.16);
-      background:rgba(255,255,255,.06);
-      color:#fff;font-weight:800;
-      display:flex;align-items:center;justify-content:center;
-      backdrop-filter:blur(10px);
-      box-shadow:0 12px 28px rgba(0,0,0,.35);
+    #reticle{
+      position:absolute; left:50%; top:50%;
+      transform: translate(-50%, -50%);
+      width:22px; height:22px;
+      display:flex; align-items:center; justify-content:center;
+      color: rgba(0,0,0,.35);
+      font-weight:800; font-size:18px;
+      pointer-events:none;
       user-select:none;
-      touch-action:manipulation;
     }
-    .btn:active{transform:scale(.98)}
-    .btn.small{font-size:12px;font-weight:800;letter-spacing:.6px}
-    .btn.hidden{display:none}
 
-    @media (hover:hover) and (pointer:fine){
-      /* hide on-screen pad on desktop if you want */
-      #pad{opacity:.75}
+    /* Click-to-close overlay hint */
+    .corner{
+      position:absolute; right:16px; top:16px;
+      padding:10px 12px; border-radius:12px;
+      background: rgba(255,255,255,.75);
+      border: 1px solid rgba(0,0,0,.08);
+      box-shadow: 0 10px 30px rgba(0,0,0,.08);
+      color:#111; font-weight:700;
+      letter-spacing:.2px;
+      opacity:.0;
+      transition: opacity .18s ease;
+      pointer-events:none;
+      backdrop-filter: blur(10px);
     }
+    .corner.show{ opacity: 1; }
   </style>
 </head>
 <body>
   <canvas id="c"></canvas>
 
   <div id="hud">
-    <div class="pill">Creative Gallery — Walkthrough</div>
+    <div class="badge">Creative Gallery — Endless Hall</div>
     <div class="hint" id="hint">
-      Click + drag to look • Arrow keys or WASD to move • Click paintings to “inspect”
-      • Shift = sprint • Esc unlock mouse
+      Drag to look • Arrow/WASD to move • Click a painting to focus • Esc to close
     </div>
     <div id="reticle">+</div>
-
-    <div id="card">
-      <div class="t" id="cardTitle">Painting</div>
-      <div class="s" id="cardSub">Click another painting to inspect. Press C to close.</div>
-    </div>
-
-    <div id="pad" aria-label="On screen controls">
-      <div class="btn" id="turnL">⟲</div>
-      <div class="btn" id="fwd">▲</div>
-      <div class="btn" id="turnR">⟳</div>
-      <div class="btn" id="left">◀</div>
-      <div class="btn" id="back">▼</div>
-      <div class="btn" id="right">▶</div>
-    </div>
+    <div class="corner" id="closeHint">Click dim / press Esc to close</div>
   </div>
 
   <script type="module">
     import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
-    import { PointerLockControls } from "https://unpkg.com/three@0.160.0/examples/jsm/controls/PointerLockControls.js";
 
     const canvas = document.querySelector("#c");
-    const hint = document.getElementById("hint");
-    const card = document.getElementById("card");
-    const cardTitle = document.getElementById("cardTitle");
-    const cardSub = document.getElementById("cardSub");
+    const closeHint = document.querySelector("#closeHint");
 
-    // ----- Scene / Renderer
-    const scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0x070812, 10, 70);
-
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
+    // ---------- Renderer / Scene / Camera
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     renderer.setSize(innerWidth, innerHeight);
     renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-    const camera = new THREE.PerspectiveCamera(70, innerWidth/innerHeight, 0.1, 200);
-    camera.position.set(0, 1.65, 10);
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf7f7f9);
+    scene.fog = new THREE.Fog(0xf7f7f9, 12, 120);
 
-    // ----- Controls (pointer lock optional)
-    const pl = new PointerLockControls(camera, document.body);
+    const camera = new THREE.PerspectiveCamera(65, innerWidth / innerHeight, 0.1, 300);
+    camera.position.set(0, 1.65, 6);
 
-    // Our “friendly” look control: click-drag to look without locking
+    // ---------- Lights (clean gallery)
+    scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+
+    const key = new THREE.DirectionalLight(0xffffff, 0.55);
+    key.position.set(8, 14, 8);
+    scene.add(key);
+
+    const fill = new THREE.DirectionalLight(0xffffff, 0.35);
+    fill.position.set(-8, 10, -10);
+    scene.add(fill);
+
+    // ---------- Simple drag-to-look (no pointer lock)
     let yaw = 0, pitch = 0;
     const look = { dragging:false, lastX:0, lastY:0 };
-    const clampPitch = () => pitch = THREE.MathUtils.clamp(pitch, -1.25, 1.25);
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
     function applyLook(){
-      // If pointer lock is active, PointerLockControls updates camera rotation automatically
-      if (pl.isLocked) return;
       camera.rotation.set(pitch, yaw, 0, "YXZ");
     }
 
     canvas.addEventListener("pointerdown", (e) => {
-      // If user clicks on a painting, we handle that separately; still allow drag look
       look.dragging = true;
       look.lastX = e.clientX;
       look.lastY = e.clientY;
@@ -144,307 +122,392 @@
     });
 
     canvas.addEventListener("pointermove", (e) => {
-      if (!look.dragging || pl.isLocked) return;
+      if (!look.dragging) return;
       const dx = e.clientX - look.lastX;
       const dy = e.clientY - look.lastY;
-      look.lastX = e.clientX; look.lastY = e.clientY;
+      look.lastX = e.clientX;
+      look.lastY = e.clientY;
 
-      yaw   -= dx * 0.0032;
-      pitch -= dy * 0.0032;
-      clampPitch();
+      yaw   -= dx * 0.003;
+      pitch -= dy * 0.003;
+      pitch = clamp(pitch, -1.15, 1.15);
       applyLook();
     });
 
-    canvas.addEventListener("pointerup", () => { look.dragging = false; });
+    canvas.addEventListener("pointerup", () => look.dragging = false);
+    canvas.addEventListener("pointercancel", () => look.dragging = false);
 
-    // Click to optionally enter pointer lock (more “game”)
-    canvas.addEventListener("dblclick", () => {
-      pl.lock();
+    // ---------- Movement (WASD + Arrow)
+    const keys = { w:false,a:false,s:false,d:false, up:false,down:false,left:false,right:false, shift:false };
+    addEventListener("keydown", (e) => {
+      if (e.code==="KeyW") keys.w=true;
+      if (e.code==="KeyA") keys.a=true;
+      if (e.code==="KeyS") keys.s=true;
+      if (e.code==="KeyD") keys.d=true;
+      if (e.code==="ArrowUp") keys.up=true;
+      if (e.code==="ArrowDown") keys.down=true;
+      if (e.code==="ArrowLeft") keys.left=true;
+      if (e.code==="ArrowRight") keys.right=true;
+      if (e.code==="ShiftLeft"||e.code==="ShiftRight") keys.shift=true;
+
+      if (e.code==="Escape") closeFocus();
+    });
+    addEventListener("keyup", (e) => {
+      if (e.code==="KeyW") keys.w=false;
+      if (e.code==="KeyA") keys.a=false;
+      if (e.code==="KeyS") keys.s=false;
+      if (e.code==="KeyD") keys.d=false;
+      if (e.code==="ArrowUp") keys.up=false;
+      if (e.code==="ArrowDown") keys.down=false;
+      if (e.code==="ArrowLeft") keys.left=false;
+      if (e.code==="ArrowRight") keys.right=false;
+      if (e.code==="ShiftLeft"||e.code==="ShiftRight") keys.shift=false;
     });
 
-    pl.addEventListener("lock", () => {
-      hint.textContent = "Pointer lock ON • WASD/Arrows move • Mouse look • Click paintings • Esc to exit";
-    });
-    pl.addEventListener("unlock", () => {
-      hint.textContent = "Click + drag to look • Arrow keys or WASD to move • Click paintings to “inspect” • Shift sprint • Double-click for full mouse-look";
-    });
+    // ---------- Gallery Hall (white floor + walls)
+    const hall = new THREE.Group();
+    scene.add(hall);
 
-    // ----- Lighting (gallery vibe)
-    scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+    const floorMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.95, metalness: 0.0 });
+    const wallMat  = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9,  metalness: 0.0 });
+    const ceilMat  = new THREE.MeshStandardMaterial({ color: 0xfdfdff, roughness: 0.98, metalness: 0.0 });
 
-    const blue = new THREE.PointLight(0x2bbcff, 1.2, 60);
-    blue.position.set(-10, 4.2, 2);
-    scene.add(blue);
+    // A single hall "segment" that we'll repeat
+    // Segment length chosen so paintings can be evenly spaced.
+    const SEG_LEN = 18;
+    const HALF_W = 8.5;
+    const H = 5.5;
 
-    const pink = new THREE.PointLight(0xff2bd6, 1.2, 60);
-    pink.position.set(12, 4.0, -8);
-    scene.add(pink);
+    function makeSegment(zCenter){
+      const g = new THREE.Group();
 
-    const warm = new THREE.PointLight(0xfeda2c, 0.8, 55);
-    warm.position.set(0, 5.0, 0);
-    scene.add(warm);
+      // Floor
+      const floor = new THREE.Mesh(new THREE.PlaneGeometry(HALF_W*2, SEG_LEN), floorMat);
+      floor.rotation.x = -Math.PI/2;
+      floor.position.set(0, 0, zCenter);
+      g.add(floor);
 
-    // ----- Materials
-    const floorMat = new THREE.MeshStandardMaterial({ color: 0x0b0c18, roughness: 0.95 });
-    const wallMat  = new THREE.MeshStandardMaterial({ color: 0x11122d, roughness: 0.9 });
-    const trimMat  = new THREE.MeshStandardMaterial({ color: 0x1a1d3d, roughness: 0.7, metalness: 0.15 });
+      // Ceiling
+      const ceil = new THREE.Mesh(new THREE.PlaneGeometry(HALF_W*2, SEG_LEN), ceilMat);
+      ceil.rotation.x = Math.PI/2;
+      ceil.position.set(0, H, zCenter);
+      g.add(ceil);
 
-    // Floor / Ceiling
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(90, 90), floorMat);
-    floor.rotation.x = -Math.PI/2;
-    scene.add(floor);
+      // Walls
+      const wallL = new THREE.Mesh(new THREE.PlaneGeometry(SEG_LEN, H), wallMat);
+      wallL.rotation.y = Math.PI/2;
+      wallL.position.set(-HALF_W, H/2, zCenter);
+      g.add(wallL);
 
-    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(90, 90), new THREE.MeshStandardMaterial({ color:0x070812, roughness:1 }));
-    ceiling.rotation.x = Math.PI/2;
-    ceiling.position.y = 6;
-    scene.add(ceiling);
+      const wallR = new THREE.Mesh(new THREE.PlaneGeometry(SEG_LEN, H), wallMat);
+      wallR.rotation.y = -Math.PI/2;
+      wallR.position.set(HALF_W, H/2, zCenter);
+      g.add(wallR);
 
-    // Walls: simple hallway room
-    function wall(w,h,d, x,y,z){
-      const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), wallMat);
-      m.position.set(x,y,z);
-      scene.add(m);
-      return m;
+      // Soft wall base line (subtle shadow edge)
+      const baseMat = new THREE.MeshStandardMaterial({ color: 0xf0f0f4, roughness: 0.95 });
+      const baseL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.08, SEG_LEN), baseMat);
+      baseL.position.set(-HALF_W+0.08, 0.04, zCenter);
+      g.add(baseL);
+
+      const baseR = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.08, SEG_LEN), baseMat);
+      baseR.position.set(HALF_W-0.08, 0.04, zCenter);
+      g.add(baseR);
+
+      return g;
     }
-    function trim(w,d,x,z){
-      const t = new THREE.Mesh(new THREE.BoxGeometry(w, 0.12, d), trimMat);
-      t.position.set(x, 0.06, z);
-      scene.add(t);
+
+    // Repeat 5 segments; we will recycle them for an “endless” feel
+    const SEG_COUNT = 5;
+    const segments = [];
+    for (let i = 0; i < SEG_COUNT; i++){
+      const z = (i - Math.floor(SEG_COUNT/2)) * SEG_LEN;
+      const seg = makeSegment(z);
+      segments.push(seg);
+      hall.add(seg);
     }
 
-    // Left/right corridor
-    wall(0.6, 6, 60, -18, 3, 0);
-    wall(0.6, 6, 60,  18, 3, 0);
-    // Back/front caps
-    wall(36, 6, 0.6, 0, 3, -26);
-    wall(36, 6, 0.6, 0, 3,  26);
-    // Base trims
-    trim(36, 0.7, 0,  26);
-    trim(36, 0.7, 0, -26);
-
-    // A fun neon “stripe” as gallery accent
-    const stripe = new THREE.Mesh(
-      new THREE.BoxGeometry(36, 0.08, 0.1),
-      new THREE.MeshStandardMaterial({ color:0x2bbcff, emissive:0x2bbcff, emissiveIntensity:0.6 })
-    );
-    stripe.position.set(0, 5.35, -25.7);
-    scene.add(stripe);
-
-    // ----- Paintings (clickable)
-    const loader = new THREE.TextureLoader();
-
-    // Put your image URLs here:
+    // ---------- Paintings (example images you can swap)
+    // Replace these later with your own URLs.
     const PAINTINGS = [
-      { url: null, title: "Neon Bloom" },
-      { url: null, title: "Coastal Dream" },
-      { url: null, title: "After Hours" },
-      { url: null, title: "Sunset Pop" },
-      { url: null, title: "Fog & Gold" },
-      { url: null, title: "Wild Color Study" },
+      { url: "https://picsum.photos/id/1011/1200/800", title: "Example 01" },
+      { url: "https://picsum.photos/id/1025/1200/800", title: "Example 02" },
+      { url: "https://picsum.photos/id/1035/1200/800", title: "Example 03" },
+      { url: "https://picsum.photos/id/1043/1200/800", title: "Example 04" },
+      { url: "https://picsum.photos/id/1050/1200/800", title: "Example 05" },
+      { url: "https://picsum.photos/id/1062/1200/800", title: "Example 06" },
+      { url: "https://picsum.photos/id/1074/1200/800", title: "Example 07" },
+      { url: "https://picsum.photos/id/1084/1200/800", title: "Example 08" },
     ];
 
-    const fallbackColors = [0x2bbcff, 0xff2bd6, 0xfeda2c, 0x25b230, 0x7c3aed, 0xff7a18];
+    const loader = new THREE.TextureLoader();
+    const clickable = [];
 
-    function paintMat(url, color){
-      if(!url){
-        return new THREE.MeshStandardMaterial({
-          color, roughness:0.65, metalness:0.15,
-          emissive: color, emissiveIntensity: 0.18
-        });
+    function makeFramedPainting(tex, w=3.25, h=2.15){
+      const group = new THREE.Group();
+
+      // Frame
+      const frameMat = new THREE.MeshStandardMaterial({ color: 0x111114, roughness: 0.45, metalness: 0.25 });
+      const frame = new THREE.Mesh(new THREE.BoxGeometry(w+0.18, h+0.18, 0.10), frameMat);
+      group.add(frame);
+
+      // Art plane
+      const artMat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.75, metalness: 0.05 });
+      const art = new THREE.Mesh(new THREE.PlaneGeometry(w, h), artMat);
+      art.position.z = 0.06; // sit in front of frame
+      group.add(art);
+
+      // Very subtle plaque
+      const plaqueMat = new THREE.MeshStandardMaterial({ color: 0xf5f5f7, roughness: 0.9 });
+      const plaque = new THREE.Mesh(new THREE.BoxGeometry(w*0.45, 0.08, 0.02), plaqueMat);
+      plaque.position.set(0, -h/2 - 0.14, 0.02);
+      group.add(plaque);
+
+      return { group, art };
+    }
+
+    // Place paintings down the corridor on both sides
+    const PAINT_SPACING = 6.0;
+    const START_Z = 18; // near front
+    const END_Z   = -80; // deep into hall (they’ll recycle)
+
+    let paintIndex = 0;
+    for (let z = START_Z; z >= END_Z; z -= PAINT_SPACING){
+      for (const side of [-1, 1]){
+        const p = PAINTINGS[paintIndex % PAINTINGS.length];
+        const tex = loader.load(p.url);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = 8;
+
+        const { group, art } = makeFramedPainting(tex);
+
+        const x = side * (HALF_W - 0.9);
+        const y = 2.25;
+        group.position.set(x, y, z);
+
+        // Face inward
+        group.rotation.y = side === -1 ? Math.PI/2 : -Math.PI/2;
+
+        // store metadata on the ART mesh for raycasting
+        art.userData = { title: p.title, url: p.url, side, z0: z };
+        clickable.push(art);
+
+        // Add a tiny spotlight above each piece (still clean, just “gallery”)
+        const spot = new THREE.SpotLight(0xffffff, 0.8, 10, Math.PI/6, 0.65, 1.0);
+        spot.position.set(x + (side * 0.8), y + 1.7, z + 0.7);
+        spot.target.position.set(x, y, z);
+        hall.add(spot);
+        hall.add(spot.target);
+
+        hall.add(group);
+
+        paintIndex++;
       }
-      const tex = loader.load(url);
-      tex.colorSpace = THREE.SRGBColorSpace;
-      tex.anisotropy = 8;
-      return new THREE.MeshStandardMaterial({ map: tex, roughness:0.75, metalness:0.05 });
     }
 
-    const paintingMeshes = [];
-    function addPainting(i, x, y, z, ry){
-      const w = 3.6, h = 2.35;
-      const frame = new THREE.Mesh(
-        new THREE.BoxGeometry(w + 0.28, h + 0.28, 0.14),
-        new THREE.MeshStandardMaterial({ color:0x0c0c12, roughness:0.45, metalness:0.35 })
-      );
-      frame.position.set(x, y, z);
-      frame.rotation.y = ry;
-      scene.add(frame);
+    // ---------- Endless illusion recycling
+    // We recycle hall segments behind/ahead of the camera as you move.
+    function recycleSegments(){
+      // Determine which segment is farthest ahead and farthest behind in Z
+      let minZ = Infinity, maxZ = -Infinity;
+      let minSeg = null, maxSeg = null;
 
-      const art = new THREE.Mesh(
-        new THREE.PlaneGeometry(w, h),
-        paintMat(PAINTINGS[i].url, fallbackColors[i % fallbackColors.length])
-      );
-      art.position.set(x, y, z + Math.cos(ry) * 0.09);
-      art.rotation.y = ry;
-      art.userData = { index: i, title: PAINTINGS[i].title };
-      scene.add(art);
-      paintingMeshes.push(art);
+      for (const seg of segments){
+        // Each segment centered at seg children positions; just use first child as reference
+        const z = seg.children[0].position.z;
+        if (z < minZ){ minZ = z; minSeg = seg; }
+        if (z > maxZ){ maxZ = z; maxSeg = seg; }
+      }
 
-      // Spotlight
-      const spot = new THREE.SpotLight(fallbackColors[i % fallbackColors.length], 0.75, 13, Math.PI/7, 0.45, 1.1);
-      spot.position.set(x + Math.sin(ry) * 1.1, y + 2.0, z + Math.cos(ry) * 1.1);
-      spot.target.position.set(x, y, z);
-      scene.add(spot, spot.target);
+      // If camera moved far beyond the “front” of segments, move the farthest-behind segment forward
+      // We’re moving along -Z, so "ahead" is more negative Z.
+      const camZ = camera.position.z;
+
+      // if camera is close to minZ (deep), push the max segment behind to further deep
+      if (camZ - minZ < 10){
+        // move the farthest-forward segment (maxZ) behind the farthest-behind (minZ)
+        const newZ = minZ - SEG_LEN;
+        for (const child of maxSeg.children){
+          child.position.z = newZ;
+        }
+      }
+
+      // if camera is too close to maxZ (back), pull the min segment forward
+      if (maxZ - camZ < 10){
+        const newZ = maxZ + SEG_LEN;
+        for (const child of minSeg.children){
+          child.position.z = newZ;
+        }
+      }
     }
 
-    // Place paintings alternating walls
-    for(let i=0;i<PAINTINGS.length;i++){
-      const leftSide = i % 2 === 0;
-      const z = 18 - i * 7.2;
-      const x = leftSide ? -14 : 14;
-      const ry = leftSide ? Math.PI/2 : -Math.PI/2;
-      addPainting(i, x, 2.35, z, ry);
+    // ---------- Click-to-focus feature artwork (center framed)
+    // We create an overlay group that appears in front of camera, centered.
+    const overlay = new THREE.Group();
+    scene.add(overlay);
+
+    // dim background plane (click to close)
+    const dimMat = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.0 });
+    const dimPlane = new THREE.Mesh(new THREE.PlaneGeometry(50, 50), dimMat);
+    dimPlane.position.set(0, 0, -3);
+    dimPlane.userData = { isDim: true };
+    overlay.add(dimPlane);
+
+    // Featured frame + art plane (starts invisible)
+    const featuredGroup = new THREE.Group();
+    overlay.add(featuredGroup);
+    featuredGroup.visible = false;
+
+    const featFrameMat = new THREE.MeshStandardMaterial({ color: 0x111114, roughness: 0.4, metalness: 0.25 });
+    const featFrame = new THREE.Mesh(new THREE.BoxGeometry(6.6, 4.4, 0.16), featFrameMat);
+    featuredGroup.add(featFrame);
+
+    const featTex = new THREE.Texture();
+    const featArtMat = new THREE.MeshStandardMaterial({ map: featTex, roughness: 0.75, metalness: 0.05 });
+    const featArt = new THREE.Mesh(new THREE.PlaneGeometry(6.3, 4.1), featArtMat);
+    featArt.position.z = 0.10;
+    featuredGroup.add(featArt);
+
+    const featLight = new THREE.SpotLight(0xffffff, 0.9, 30, Math.PI/5, 0.7, 1.0);
+    featLight.position.set(0, 3.2, 1.8);
+    featLight.target.position.set(0, 0.2, -3);
+    overlay.add(featLight);
+    overlay.add(featLight.target);
+
+    // Keep overlay in front of camera
+    function updateOverlay(){
+      // position overlay at camera, oriented with camera
+      overlay.position.copy(camera.position);
+      overlay.quaternion.copy(camera.quaternion);
+
+      // keep featured art a bit forward and centered
+      featuredGroup.position.set(0, 0.1, -3.2);
+      dimPlane.position.set(0, 0.0, -3.4);
     }
 
-    // ----- Raycaster click to inspect
+    let isFocused = false;
+    function openFocusFromUrl(url){
+      const tex = loader.load(url, () => {
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = 8;
+        featArtMat.map = tex;
+        featArtMat.needsUpdate = true;
+      });
+
+      featuredGroup.visible = true;
+      isFocused = true;
+      closeHint.classList.add("show");
+
+      // dim in
+      dimMat.opacity = 0.22;
+      // subtle zoom pop animation values
+      featuredGroup.scale.set(0.96, 0.96, 0.96);
+      focusTween = { t0: performance.now(), dur: 220 };
+    }
+
+    function closeFocus(){
+      if (!isFocused) return;
+      isFocused = false;
+      closeHint.classList.remove("show");
+      // dim out
+      dimMat.opacity = 0.0;
+      featuredGroup.visible = false;
+    }
+
+    // ---------- Raycasting
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
-    function showCard(title){
-      card.style.display = "block";
-      cardTitle.textContent = title;
-      cardSub.textContent = "Click another painting to inspect • Press C to close";
-    }
-    function hideCard(){ card.style.display = "none"; }
-
-    addEventListener("keydown", (e) => {
-      if(e.code === "KeyC") hideCard();
-    });
-
-    canvas.addEventListener("click", (e) => {
-      // If pointer locked, click is common; still allow inspection
+    function setMouseFromEvent(e){
       const rect = canvas.getBoundingClientRect();
       mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       mouse.y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
+    }
 
+    canvas.addEventListener("click", (e) => {
+      setMouseFromEvent(e);
       raycaster.setFromCamera(mouse, camera);
-      const hits = raycaster.intersectObjects(paintingMeshes, false);
-      if(hits.length){
-        const p = hits[0].object;
-        const title = p.userData.title || "Painting";
-        showCard(title);
 
-        // Walk camera gently toward the painting (user-friendly “auto inspect”)
-        const targetPos = new THREE.Vector3();
-        p.getWorldPosition(targetPos);
+      // If focused, allow clicking dimPlane to close
+      if (isFocused){
+        const hits = raycaster.intersectObject(dimPlane, false);
+        if (hits.length){
+          closeFocus();
+          return;
+        }
+      }
 
-        // offset away from wall so we don’t clip
-        const forward = new THREE.Vector3(0,0,1).applyQuaternion(p.quaternion);
-        const viewPos = targetPos.clone().add(forward.multiplyScalar(2.2)).setY(1.65);
-
-        tweenTo(viewPos, 0.35);
+      // Normal: click paintings to focus
+      const hits = raycaster.intersectObjects(clickable, false);
+      if (hits.length){
+        const art = hits[0].object;
+        openFocusFromUrl(art.userData.url);
       }
     });
 
-    // Simple tween (no libs)
-    let tween = null;
-    function tweenTo(dest, seconds=0.35){
-      const start = camera.position.clone();
-      const t0 = performance.now();
-      tween = { start, dest, seconds, t0 };
+    // ---------- Movement update + simple turn keys
+    function move(dt){
+      if (isFocused) return; // freeze movement while focused (feels more elegant)
+
+      const speed = (keys.shift ? 7.0 : 4.4);
+      const turnSpeed = 1.65;
+
+      if (keys.left)  yaw += turnSpeed * dt;
+      if (keys.right) yaw -= turnSpeed * dt;
+      applyLook();
+
+      const forward = (keys.w || keys.up) ? 1 : 0;
+      const back    = (keys.s || keys.down) ? 1 : 0;
+      const strL     = keys.a ? 1 : 0;
+      const strR     = keys.d ? 1 : 0;
+
+      const dz = (forward - back) * speed * dt;
+      const dx = (strR - strL) * speed * dt;
+
+      // move relative to yaw
+      const forwardVec = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw)).multiplyScalar(-dz);
+      const rightVec   = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw)).multiplyScalar(dx);
+
+      camera.position.add(forwardVec).add(rightVec);
+
+      // Keep within hallway width (so it reads like a corridor)
+      camera.position.x = THREE.MathUtils.clamp(camera.position.x, -2.3, 2.3);
+      camera.position.y = 1.65;
     }
 
-    // ----- Movement (WASD + Arrows)
-    const keys = { w:false,a:false,s:false,d:false, up:false,down:false,left:false,right:false, shift:false };
-    addEventListener("keydown", (e) => {
-      if(e.code==="KeyW") keys.w=true;
-      if(e.code==="KeyA") keys.a=true;
-      if(e.code==="KeyS") keys.s=true;
-      if(e.code==="KeyD") keys.d=true;
-      if(e.code==="ArrowUp") keys.up=true;
-      if(e.code==="ArrowDown") keys.down=true;
-      if(e.code==="ArrowLeft") keys.left=true;
-      if(e.code==="ArrowRight") keys.right=true;
-      if(e.code==="ShiftLeft"||e.code==="ShiftRight") keys.shift=true;
-    });
-    addEventListener("keyup", (e) => {
-      if(e.code==="KeyW") keys.w=false;
-      if(e.code==="KeyA") keys.a=false;
-      if(e.code==="KeyS") keys.s=false;
-      if(e.code==="KeyD") keys.d=false;
-      if(e.code==="ArrowUp") keys.up=false;
-      if(e.code==="ArrowDown") keys.down=false;
-      if(e.code==="ArrowLeft") keys.left=false;
-      if(e.code==="ArrowRight") keys.right=false;
-      if(e.code==="ShiftLeft"||e.code==="ShiftRight") keys.shift=false;
-    });
-
-    // On-screen pad (click/touch)
-    function bindHold(id, onDown, onUp){
-      const el = document.getElementById(id);
-      const down = (e)=>{ e.preventDefault(); onDown(); };
-      const up = (e)=>{ e.preventDefault(); onUp(); };
-      el.addEventListener("pointerdown", down);
-      el.addEventListener("pointerup", up);
-      el.addEventListener("pointercancel", up);
-      el.addEventListener("pointerleave", up);
-    }
-    bindHold("fwd", ()=>keys.up=true, ()=>keys.up=false);
-    bindHold("back", ()=>keys.down=true, ()=>keys.down=false);
-    bindHold("left", ()=>keys.a=true, ()=>keys.a=false);
-    bindHold("right", ()=>keys.d=true, ()=>keys.d=false);
-    bindHold("turnL", ()=>keys.left=true, ()=>keys.left=false);
-    bindHold("turnR", ()=>keys.right=true, ()=>keys.right=false);
-
-    // Bounds so people don’t get lost outside the room
-    function clampToGallery(pos){
-      pos.x = THREE.MathUtils.clamp(pos.x, -16, 16);
-      pos.z = THREE.MathUtils.clamp(pos.z, -24, 24);
-      pos.y = 1.65;
+    // ---------- Small “pop” tween for focused art
+    let focusTween = null;
+    function tickFocusTween(now){
+      if (!focusTween) return;
+      const t = (now - focusTween.t0) / focusTween.dur;
+      if (t >= 1){
+        featuredGroup.scale.set(1,1,1);
+        focusTween = null;
+        return;
+      }
+      const k = 1 - Math.pow(1 - t, 3); // easeOutCubic
+      const s = 0.96 + (1.0 - 0.96) * k;
+      featuredGroup.scale.set(s, s, s);
     }
 
+    // ---------- Animate
     let last = performance.now();
     function animate(now){
       requestAnimationFrame(animate);
-      const dt = Math.min(0.033, (now-last)/1000);
+      const dt = Math.min(0.033, (now - last) / 1000);
       last = now;
 
-      // tween camera position for inspect
-      if(tween){
-        const t = (now - tween.t0) / (tween.seconds*1000);
-        const k = t>=1 ? 1 : (1 - Math.pow(1 - t, 3)); // easeOutCubic
-        camera.position.lerpVectors(tween.start, tween.dest, k);
-        if(t>=1) tween = null;
-      }
-
-      // If pointer locked, use pl mouse look; otherwise we rotate via yaw/pitch (drag) or arrows
-      const turnSpeed = 1.8; // radians/sec for arrow turning
-      if(!pl.isLocked){
-        if(keys.left)  yaw += turnSpeed * dt;
-        if(keys.right) yaw -= turnSpeed * dt;
-        applyLook();
-      }
-
-      // Movement
-      const speed = keys.shift ? 6.8 : 4.2;
-
-      // Forward/back: WASD or arrows
-      const forward = (keys.w || keys.up) ? 1 : 0;
-      const back    = (keys.s || keys.down) ? 1 : 0;
-      const strafeL  = keys.a ? 1 : 0;
-      const strafeR  = keys.d ? 1 : 0;
-
-      const moveF = (forward - back) * speed * dt;
-      const moveR = (strafeR - strafeL) * speed * dt;
-
-      // If pointer lock enabled, use controls movement helpers
-      if(pl.isLocked){
-        if(moveF) pl.moveForward(moveF);
-        if(moveR) pl.moveRight(moveR);
-      }else{
-        // Otherwise, move relative to camera yaw
-        const dirF = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw)).multiplyScalar(-moveF);
-        const dirR = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw)).multiplyScalar(moveR);
-        camera.position.add(dirF).add(dirR);
-      }
-
-      clampToGallery(camera.position);
+      move(dt);
+      recycleSegments();
+      updateOverlay();
+      tickFocusTween(now);
 
       renderer.render(scene, camera);
     }
     animate(performance.now());
 
     addEventListener("resize", () => {
-      camera.aspect = innerWidth/innerHeight;
+      camera.aspect = innerWidth / innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(innerWidth, innerHeight);
     });
